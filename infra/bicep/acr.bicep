@@ -1,4 +1,7 @@
+@description('Name of the Azure Container Registry')
 param acrName string
+
+@description('Azure region for the Container Registry')
 param location string
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {

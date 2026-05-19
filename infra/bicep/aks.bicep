@@ -1,9 +1,22 @@
+@description('Name of the AKS cluster')
 param aksName string
+
+@description('Azure region for the AKS cluster')
 param location string
+
+@description('Kubernetes version. Leave empty to use Azure default.')
 param kubernetesVersion string
+
+@description('Number of nodes in the system pool')
 param nodeCount int
+
+@description('VM size for the system pool nodes')
 param nodeVmSize string
+
+@description('Resource ID of the Log Analytics workspace for monitoring')
 param logAnalyticsWorkspaceResourceId string
+
+@description('Resource ID of the Azure Container Registry for AcrPull role assignment')
 param acrResourceId string
 
 resource aks 'Microsoft.ContainerService/managedClusters@2025-08-01' = {
@@ -46,9 +59,13 @@ resource aks 'Microsoft.ContainerService/managedClusters@2025-08-01' = {
   }
 }
 
+resource acrResource 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+  name: last(split(acrResourceId, '/'))
+}
+
 resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(aks.id, acrResourceId, 'AcrPull')
-  scope: resourceGroup()
+  scope: acrResource
   properties: {
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',

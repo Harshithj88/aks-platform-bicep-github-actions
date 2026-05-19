@@ -1,4 +1,7 @@
+@description('Name of the Key Vault')
 param keyVaultName string
+
+@description('Azure region for the Key Vault')
 param location string
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {

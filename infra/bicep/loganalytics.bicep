@@ -1,4 +1,7 @@
+@description('Name of the Log Analytics workspace')
 param workspaceName string
+
+@description('Azure region for the Log Analytics workspace')
 param location string
 
 resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
