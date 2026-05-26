@@ -52,6 +52,17 @@ jobs:
         template: ./infra/bicep/main.bicep
         parameters: ./infra/bicep/params/${{ github.event.inputs.environment }}.bicepparam
         deploymentMode: Validate
+        deploymentName: validate-aks-${{ github.event.inputs.environment }}-${{ github.run_number }}
+
+    - name: What-If preview
+      uses: azure/arm-deploy@v2
+      with:
+        scope: resourcegroup
+        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ steps.rg.outputs.resource_group }}
+        template: ./infra/bicep/main.bicep
+        parameters: ./infra/bicep/params/${{ github.event.inputs.environment }}.bicepparam
+        additionalArguments: --what-if
 
     - name: Deploy Bicep template
       uses: azure/arm-deploy@v2
@@ -62,3 +73,4 @@ jobs:
         template: ./infra/bicep/main.bicep
         parameters: ./infra/bicep/params/${{ github.event.inputs.environment }}.bicepparam
         deploymentMode: Incremental
+        deploymentName: deploy-aks-${{ github.event.inputs.environment }}-${{ github.run_number }}
