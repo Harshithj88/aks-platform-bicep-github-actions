@@ -114,21 +114,24 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Main[main.bicep] --> LAW[loganalytics.bicep]
+    Main[main.bicep] --> VNet[vnet.bicep]
+    Main --> LAW[loganalytics.bicep]
     Main --> ACR[acr.bicep]
     Main --> KV[keyvault.bicep]
     Main --> AKS[aks.bicep]
 
+    VNet -->|aksSubnetId| AKS
     LAW -->|workspaceResourceId| AKS
     ACR -->|acrResourceId| AKS
 ```
 
 The `main.bicep` orchestrator deploys modules in dependency order:
 
-1. **Log Analytics** — deployed first (AKS depends on its resource ID)
-2. **ACR** — deployed in parallel with Log Analytics (AKS depends on its resource ID)
-3. **Key Vault** — deployed independently (no downstream dependencies yet)
-4. **AKS** — deployed last (depends on Log Analytics and ACR outputs)
+1. **VNet + NSG** — deployed first (AKS depends on its subnet ID)
+2. **Log Analytics** — AKS depends on its resource ID
+3. **ACR** — deployed in parallel with Log Analytics (AKS depends on its resource ID)
+4. **Key Vault** — deployed independently (no downstream dependencies yet)
+5. **AKS** — deployed last (depends on VNet, Log Analytics, and ACR outputs)
 
 ## Naming Convention
 
@@ -140,4 +143,5 @@ All resources follow the pattern: `{type}-{project}-{environment}`
 | AKS Cluster | `aks-{project}-{env}` | `aks-srelab-dev` |
 | Container Registry | `acr{project}{env}` | `acrsrelabdev` |
 | Key Vault | `kv-{project}-{env}` | `kv-srelab-dev` |
+| Virtual Network | `vnet-{project}-{env}` | `vnet-srelab-dev` |
 | Log Analytics | `law-{project}-{env}` | `law-srelab-dev` |

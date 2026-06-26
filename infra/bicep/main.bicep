@@ -20,6 +20,14 @@ param nodeVmSize string = 'Standard_B2s'
 
 var namePrefix = '${projectName}-${environment}'
 
+module vnet 'vnet.bicep' = {
+  name: 'deploy-vnet'
+  params: {
+    vnetName: 'vnet-${namePrefix}'
+    location: location
+  }
+}
+
 module logAnalytics 'loganalytics.bicep' = {
   name: 'deploy-loganalytics'
   params: {
@@ -54,9 +62,11 @@ module aks 'aks.bicep' = {
     nodeVmSize: nodeVmSize
     logAnalyticsWorkspaceResourceId: logAnalytics.outputs.workspaceResourceId
     acrResourceId: acr.outputs.acrResourceId
+    aksSubnetId: vnet.outputs.aksSubnetId
   }
 }
 
+output vnetId string = vnet.outputs.vnetId
 output aksClusterName string = aks.outputs.aksClusterName
 output acrLoginServer string = acr.outputs.acrLoginServer
 output keyVaultUri string = keyVault.outputs.keyVaultUri

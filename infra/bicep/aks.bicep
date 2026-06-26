@@ -19,6 +19,18 @@ param logAnalyticsWorkspaceResourceId string
 @description('Resource ID of the Azure Container Registry for AcrPull role assignment')
 param acrResourceId string
 
+@description('Resource ID of the AKS subnet')
+param aksSubnetId string
+
+@description('Enable cluster autoscaler')
+param enableAutoScaling bool = true
+
+@description('Minimum node count when autoscaler is enabled')
+param minNodeCount int = 1
+
+@description('Maximum node count when autoscaler is enabled')
+param maxNodeCount int = 5
+
 resource aks 'Microsoft.ContainerService/managedClusters@2025-08-01' = {
   name: aksName
   location: location
@@ -30,6 +42,10 @@ resource aks 'Microsoft.ContainerService/managedClusters@2025-08-01' = {
 
     kubernetesVersion: empty(kubernetesVersion) ? null : kubernetesVersion
 
+    autoUpgradeProfile: {
+      upgradeChannel: 'stable'
+    }
+
     agentPoolProfiles: [
       {
         name: 'systempool'
@@ -38,6 +54,15 @@ resource aks 'Microsoft.ContainerService/managedClusters@2025-08-01' = {
         osType: 'Linux'
         mode: 'System'
         type: 'VirtualMachineScaleSets'
+        availabilityZones: [
+          '1'
+          '2'
+          '3'
+        ]
+        enableAutoScaling: enableAutoScaling
+        minCount: enableAutoScaling ? minNodeCount : null
+        maxCount: enableAutoScaling ? maxNodeCount : null
+        vnetSubnetID: aksSubnetId
       }
     ]
 
