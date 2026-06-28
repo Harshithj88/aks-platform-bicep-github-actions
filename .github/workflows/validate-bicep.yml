@@ -1,0 +1,55 @@
+name: Validate Bicep Templates
+
+on:
+  pull_request:
+    paths:
+      - 'infra/bicep/**'
+      - 'bicepconfig.json'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  lint:
+    name: Lint Bicep
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Run Bicep linter
+      shell: bash
+      run: az bicep build --file infra/bicep/main.bicep --stdout > /dev/null
+
+  validate:
+    name: Validate (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    needs: lint
+
+    strategy:
+      matrix:
+        environment: [dev, prod]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Azure login using OIDC
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Validate Bicep template (${{ matrix.environment }})
+      uses: azure/arm-deploy@v2
+      with:
+        scope: resourcegroup
+        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        resourceGroupName: rg-srelab-${{ matrix.environment }}
+        template: ./infra/bicep/main.bicep
+        parameters: ./infra/bicep/params/${{ matrix.environment }}.bicepparam
+        deploymentMode: Validate
+        deploymentName: pr-validate-${{ matrix.environment }}-${{ github.run_number }}
