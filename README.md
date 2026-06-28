@@ -60,7 +60,9 @@ See [docs/architecture.md](docs/architecture.md) for detailed architecture docum
 aks-platform-bicep-github-actions/
 ├── .github/
 │   └── workflows/
-│       └── deploy-infra.yml          # GitHub Actions deployment workflow
+│       ├── deploy-infra.yml          # Infrastructure deployment workflow
+│       ├── deploy-app.yml            # Application build and deploy workflow
+│       └── validate-bicep.yml        # PR validation (lint + validate)
 ├── infra/
 │   └── bicep/
 │       ├── main.bicep                # Orchestrator module
@@ -68,14 +70,17 @@ aks-platform-bicep-github-actions/
 │       ├── acr.bicep                 # Container Registry module
 │       ├── keyvault.bicep            # Key Vault module
 │       ├── loganalytics.bicep        # Log Analytics module
+│       ├── vnet.bicep                # Virtual Network + NSG module
 │       └── params/
 │           ├── dev.bicepparam        # Dev environment parameters
 │           └── prod.bicepparam       # Prod environment parameters
 ├── k8s/
 │   └── sample-app/
-│       ├── deployment.yaml           # Sample Kubernetes deployment
-│       ├── service.yaml              # Sample Kubernetes service
-│       └── namespace.yaml            # Sample namespace
+│       ├── namespace.yaml            # Namespace definition
+│       ├── deployment.yaml           # Application deployment
+│       ├── service.yaml              # LoadBalancer service
+│       ├── hpa.yaml                  # Horizontal Pod Autoscaler
+│       └── network-policy.yaml       # Network policy (ingress/egress)
 ├── docs/
 │   ├── architecture.md              # Architecture documentation
 │   ├── deployment-guide.md          # Step-by-step deployment guide
@@ -177,9 +182,10 @@ See [docs/deployment-guide.md](docs/deployment-guide.md) for the full deployment
 | Module | File | Resources Created |
 |---|---|---|
 | **Orchestrator** | [`main.bicep`](infra/bicep/main.bicep) | Coordinates all module deployments |
-| **AKS** | [`aks.bicep`](infra/bicep/aks.bicep) | AKS cluster, system node pool, OMS agent, ACR pull role |
+| **AKS** | [`aks.bicep`](infra/bicep/aks.bicep) | AKS cluster, autoscaler, availability zones, auto-upgrade, OMS agent, ACR pull role |
 | **ACR** | [`acr.bicep`](infra/bicep/acr.bicep) | Container registry (Basic SKU, admin disabled) |
 | **Key Vault** | [`keyvault.bicep`](infra/bicep/keyvault.bicep) | Key Vault with RBAC authorization, soft delete |
+| **VNet + NSG** | [`vnet.bicep`](infra/bicep/vnet.bicep) | Virtual network, AKS subnet, network security group |
 | **Log Analytics** | [`loganalytics.bicep`](infra/bicep/loganalytics.bicep) | Log Analytics workspace (30-day retention) |
 
 ---
@@ -193,6 +199,9 @@ See [docs/deployment-guide.md](docs/deployment-guide.md) for the full deployment
 | Node Count | 1 | 2 |
 | VM Size | `Standard_B2s` | `Standard_B2s` |
 | K8s Version | Azure default | Azure default |
+| Autoscaler | 1-5 nodes | 1-5 nodes |
+| Availability Zones | 1, 2, 3 | 1, 2, 3 |
+| Auto-upgrade | Stable channel | Stable channel |
 
 ---
 
@@ -203,6 +212,8 @@ See [docs/deployment-guide.md](docs/deployment-guide.md) for the full deployment
 - **ACR Pull role** — AKS identity is granted AcrPull on the container registry
 - **Key Vault RBAC** — Azure RBAC authorization enabled (no access policies)
 - **Admin disabled** — ACR admin user is disabled
+- **VNet integration** — AKS deployed into a dedicated subnet with NSG rules
+- **Network policies** — Kubernetes NetworkPolicy restricts pod-to-pod traffic
 - **Least privilege** — role assignments scoped to specific resources
 
 ---
