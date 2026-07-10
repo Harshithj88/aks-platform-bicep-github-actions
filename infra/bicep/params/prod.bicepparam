@@ -5,4 +5,4 @@ param location = 'eastus'
 param projectName = 'srelab'
 param kubernetesVersion = ''
 param nodeCount = 2
-param nodeVmSize = 'Standard_B2s'
+param nodeVmSize = 'Standard_D2s_v3'

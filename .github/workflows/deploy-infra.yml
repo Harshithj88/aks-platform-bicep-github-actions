@@ -43,6 +43,13 @@ jobs:
       run: |
         echo "resource_group=rg-srelab-${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
 
+    - name: Ensure resource group exists
+      shell: bash
+      run: |
+        az group create \
+          --name ${{ steps.rg.outputs.resource_group }} \
+          --location ${{ env.LOCATION }}
+
     - name: Validate Bicep template
       uses: azure/arm-deploy@v2
       with:

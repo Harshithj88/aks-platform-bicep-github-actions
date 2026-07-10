@@ -31,7 +31,7 @@ param minNodeCount int = 1
 @description('Maximum node count when autoscaler is enabled')
 param maxNodeCount int = 5
 
-resource aks 'Microsoft.ContainerService/managedClusters@2025-08-01' = {
+resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
   name: aksName
   location: location
   identity: {

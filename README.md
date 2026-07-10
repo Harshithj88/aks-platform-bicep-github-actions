@@ -79,6 +79,7 @@ aks-platform-bicep-github-actions/
 │       ├── namespace.yaml            # Namespace definition
 │       ├── deployment.yaml           # Application deployment
 │       ├── service.yaml              # LoadBalancer service
+│       ├── serviceaccount.yaml       # ServiceAccount
 │       ├── hpa.yaml                  # Horizontal Pod Autoscaler
 │       └── network-policy.yaml       # Network policy (ingress/egress)
 ├── docs/
@@ -197,7 +198,7 @@ See [docs/deployment-guide.md](docs/deployment-guide.md) for the full deployment
 | Environment | `dev` | `prod` |
 | Location | `eastus` | `eastus` |
 | Node Count | 1 | 2 |
-| VM Size | `Standard_B2s` | `Standard_B2s` |
+| VM Size | `Standard_B2s` | `Standard_D2s_v3` |
 | K8s Version | Azure default | Azure default |
 | Autoscaler | 1-5 nodes | 1-5 nodes |
 | Availability Zones | 1, 2, 3 | 1, 2, 3 |
@@ -215,6 +216,8 @@ See [docs/deployment-guide.md](docs/deployment-guide.md) for the full deployment
 - **VNet integration** — AKS deployed into a dedicated subnet with NSG rules
 - **Network policies** — Kubernetes NetworkPolicy restricts pod-to-pod traffic
 - **Least privilege** — role assignments scoped to specific resources
+- **Pod security** — securityContext enforces non-root, read-only filesystem, no privilege escalation
+- **ServiceAccount** — dedicated service account with automountServiceAccountToken disabled
 
 ---
 

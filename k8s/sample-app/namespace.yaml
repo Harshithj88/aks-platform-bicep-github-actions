@@ -4,4 +4,3 @@ metadata:
   name: sample-app
   labels:
     app: sample-app
-    environment: dev

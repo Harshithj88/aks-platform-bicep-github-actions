@@ -37,11 +37,11 @@ module logAnalytics 'loganalytics.bicep' = {
 }
 
 module acr 'acr.bicep' = {
-    name: 'deploy-acr'
-    params: {
+  name: 'deploy-acr'
+  params: {
     acrName: replace('acr${projectName}${environment}', '-', '')
     location: location
-    }
+  }
 }
 
 module keyVault 'keyvault.bicep' = {

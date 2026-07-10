@@ -99,18 +99,18 @@ jobs:
       shell: bash
       run: kubectl apply -f k8s/sample-app/namespace.yaml
 
-    - name: Update image tag in deployment
+    - name: Deploy application manifests
       shell: bash
       run: |
         IMAGE=${{ env.ACR_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ needs.build-and-push.outputs.image_tag }}
+        kubectl apply -f k8s/sample-app/serviceaccount.yaml
+        kubectl apply -f k8s/sample-app/deployment.yaml
         kubectl set image deployment/${{ env.APP_NAME }} \
           ${{ env.APP_NAME }}=$IMAGE \
-          -n ${{ env.NAMESPACE }} \
-          --record || kubectl apply -f k8s/sample-app/deployment.yaml -n ${{ env.NAMESPACE }}
-
-    - name: Apply service manifest
-      shell: bash
-      run: kubectl apply -f k8s/sample-app/service.yaml
+          -n ${{ env.NAMESPACE }}
+        kubectl apply -f k8s/sample-app/service.yaml
+        kubectl apply -f k8s/sample-app/hpa.yaml
+        kubectl apply -f k8s/sample-app/network-policy.yaml
 
     - name: Wait for rollout
       shell: bash

@@ -9,3 +9,5 @@
 - Automated AKS infrastructure validation and deployment using GitHub Actions with environment-based workflow inputs and deployment governance.
 
 - Configured AKS integration with Azure Container Registry and Log Analytics to support container image pulls, monitoring, and operational visibility.
+
+- Deployed AKS into a dedicated VNet subnet with NSG rules, NetworkPolicy for pod-to-pod traffic control, and Kubernetes security hardening (non-root containers, read-only filesystem, dedicated ServiceAccounts).
