@@ -1,0 +1,54 @@
+name: Bicep Lint & Validate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.bicep'
+      - '**.bicepparam'
+      - '.github/workflows/bicep-lint.yml'
+  push:
+    branches: [main]
+    paths:
+      - '**.bicep'
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Bicep Build & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bicep CLI
+        run: |
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x bicep
+          sudo mv bicep /usr/local/bin/bicep
+          bicep --version
+
+      - name: Lint all Bicep files
+        run: |
+          failed=0
+          for file in $(find . -name '*.bicep' -not -path './.git/*'); do
+            echo "=== Linting $file ==="
+            if ! bicep lint "$file"; then
+              failed=1
+            fi
+          done
+          exit $failed
+
+      - name: Build all Bicep files
+        run: |
+          failed=0
+          for file in $(find . -name '*.bicep' -not -path './.git/*'); do
+            echo "=== Building $file ==="
+            if ! bicep build "$file" --stdout > /dev/null; then
+              echo "FAILED: $file"
+              failed=1
+            fi
+          done
+          exit $failed
