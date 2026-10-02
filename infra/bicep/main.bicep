@@ -18,6 +18,9 @@ param nodeCount int = 2
 @description('AKS VM size')
 param nodeVmSize string = 'Standard_B2s'
 
+@description('Apply a CanNotDelete lock on the resource group. Defaults to true in prod.')
+param enableResourceLock bool = environment == 'prod'
+
 var namePrefix = '${projectName}-${environment}'
 
 module vnet 'vnet.bicep' = {
@@ -49,6 +52,15 @@ module keyVault 'keyvault.bicep' = {
   params: {
     keyVaultName: 'kv-${namePrefix}'
     location: location
+  }
+}
+
+module resourceLock 'modules/resource-lock.bicep' = if (enableResourceLock) {
+  name: 'deploy-resource-lock'
+  params: {
+    resourceName: 'rg-${namePrefix}'
+    lockLevel: 'CanNotDelete'
+    notes: 'Protects the ${environment} AKS platform resource group from accidental deletion.'
   }
 }
 
